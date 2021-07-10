@@ -174,7 +174,11 @@ function downloadImageObject(tweet, tweetSelector, imageTags) {
             } else {
                 src = src + '?name=orig';
             }
-            const index = getTweetIndex($(element).parents('a')[0].href)
+            var index = 0;
+            if ($(element).parents('a').length >0) {
+                console.log($(element).parents('a')[0].href);
+                index = getTweetIndex($(element).parents('a')[0].href)
+            }
             processImageDownload(src, readerableFilename(tweet, tweetSelector, index))
         }
     })

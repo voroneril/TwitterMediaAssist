@@ -271,11 +271,43 @@ function downloadMp4Video(url, readableName) {
     });
 }
 
+function downloadImageRenamer (item, suggest) {
+
+    const uploadedImageQuery = /https:\/\/pbs.twimg.com\/media\/(.*)?\?.*/g;
+    const nameMatches = uploadedImageQuery.exec(item.url)
+    if (nameMatches!=null && nameMatches.length) {
+        const filename = item.filename.split('.')[0]
+        const suggestFilename = readableNameList[filename] || item.filename
+        delete readableNameList[filename]
+        return suggest({filename: suggestFilename, conflictAction: "uniquify"});
+    } else {
+        return;
+    }
+}
+
+function downloadLogger (item) {
+    if(typeof item.filename != 'undefined') {
+        if (chrome.downloads.onDeterminingFilename.hasListener(downloadImageRenamer) && downloadFilePull.includes(item.id)) {
+            downloadFilePull.splice(downloadFilePull.indexOf(item.id), 1);
+            downloadFileCount = downloadFileCount - 1
+            if (downloadFilePull.length == 0 && downloadFileCount < 1)  {
+                chrome.downloads.onDeterminingFilename.removeListener(downloadImageRenamer)
+            }
+        }
+    }
+}
+
+var downloadFilePull = [];
+var downloadFileCount = 0;
+    
 function downloadImage(url, readableName, readableNameList) {
     browser.storage.sync.get({
         spcificPathName: false,
         readableName: false
-    }).then((items) => {
+        
+    }).then(async (items) => {
+        
+
         const uploadedImageQuery = /https:\/\/pbs.twimg.com\/media\/(.*)?\?.*/g;
         const extensionAttributeQuery = /(?:\?|\&)format\=([^&]+)/g;
 
@@ -302,8 +334,18 @@ function downloadImage(url, readableName, readableNameList) {
         if (formatMatches.length) {
             options.filename = `${filename}.${format}` 
         }
-
-        browser.downloads.download(options);
+        if(!!chrome.downloads.onDeterminingFilename) {
+            if (!chrome.downloads.onDeterminingFilename.hasListener(downloadImageRenamer))
+                chrome.downloads.onDeterminingFilename.addListener(downloadImageRenamer)
+            if (!chrome.downloads.onChanged.hasListener(downloadLogger))
+                chrome.downloads.onChanged.addListener(downloadLogger)
+        }
+        
+        downloadFileCount = downloadFileCount + 1;
+        
+        let file = await browser.downloads.download(options);
+        
+        downloadFilePull.push(file);
     });
 }
 
