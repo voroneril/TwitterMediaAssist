@@ -1,18 +1,22 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Twitter Media Assist",
   "description": "For your better Twitter media experience.",
   "version": "3.2",
-
+  
   "permissions": [
-    "*://twitter.com/*",
-    "*://*.twitter.com/*",
-	"*://*.twimg.com/*",
-	"*://video.twimg.com/*",
     "storage",
     "downloads",
     "tabs"
   ],
+  
+  "host_permissions": [
+    "https://twitter.com/*",
+    "https://*.twitter.com/*",
+    "https://*.twimg.com/*",
+    "https://video.twimg.com/*"
+  ],
+
 
   "icons": {
     "16": "icon_bitty.png",
@@ -32,6 +36,6 @@
   },
 
   "background": {
-    "scripts": ["browser-polyfill.min.js", "twitter_video_downloader.js", "twitter_video_assist_server.js"]
+    "service_worker": "background.js"
   }
 }
