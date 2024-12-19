@@ -118,6 +118,41 @@ function injectReactDownloadButton(target) {
 
     const iconsGroups = tweet.find('div[role="group"]')
     const lastIcon = $(iconsGroups[iconsGroups.length - 1]).children('div:last-child')
+    const download = lastIcon.clone()
+    lastIcon.addClass('r-13awgt0 r-18u37iz r-1h0z5md')
+
+    download.addClass('tva-download-icon')
+    download.children('div:first-child').data('testid', 'download')
+    download.children('div:first-child').attr('aria-label', 'Media Download')
+    download.find('svg').html(downloadIcon)
+    download.click('article', downloadMediaObject)
+
+    const button = download.find('div > button');
+    if (button) {
+        button.removeAttr('aria-disabled');
+        button.removeAttr('disabled');
+        button.removeClass();
+        button.addClass("css-175oi2r r-1777fci r-bt1l66 r-bztko3 r-lrvibr r-1loqt21 r-1ny4l3l")
+    }
+    
+    lastIcon.after(download)
+}
+
+function injectReactDownloadButton_old(target) {
+    var tweet = $(target).closest('article')
+
+    if (!tweet.length) {
+        const modal = $(target).closest(modalCalss)
+        injectReactModalDownloadButton(modal)
+        return
+    }
+
+    if (tweet.find('div[role="group"] div.tva-download-icon').length) {
+        return
+    }
+
+    const iconsGroups = tweet.find('div[role="group"]')
+    const lastIcon = $(iconsGroups[iconsGroups.length - 1]).children('div:last-child')
     lastIcon.after(lastIcon.clone())
 
     var download = lastIcon.next()
@@ -198,6 +233,7 @@ async function downloadVideoObject(tweet, tweetSelector, videoTag) {
 
 function downloadImageObject(tweet, tweetSelector, imageTags) {
     imageTags.map((element, index) => {
+        console.log(element)
         const src = refineImageSourceParams(element.src)
         const imageIndex = indexOfImage(tweetSelector, index, imageTags.length)
         const readableFilename = generateReaderableFilename(tweet, tweetSelector, imageIndex)
@@ -206,13 +242,9 @@ function downloadImageObject(tweet, tweetSelector, imageTags) {
 }
 
 function refineImageSourceParams(src) {
-    const url = new URL(src);
-    const searchParams = new URLSearchParams(url);
-    searchParams.set('format', 'jpg')
-    searchParams.set('name', 'orig')
-    url.search = searchParams
-
-    return url.toString()
+    src = src.replace(/\&name=.*?$/, '&name=orig')
+    console.log('src', src);
+    return src;
 }
 
 function generateReaderableFilename(tweet, selector, imageIndex) {
